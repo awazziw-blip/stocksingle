@@ -232,7 +232,7 @@
 
         <div class="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-500 flex items-center justify-between">
           <span>Opportunity Multiplier: <strong class="text-cyan-400" id="val-om">9.00 / 10.0 (Exceptional)</strong></span>
-         
+          <button onclick="fetchSheetData()" class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
             <span>🔄 อัปเดตข้อมูลสด</span>
           </button>
         </div>
@@ -272,7 +272,6 @@
           </h3>
           <p class="text-xs text-slate-400 mt-0.5">ตารางสรุปราคาตลาด vs Fair Value, โซนเข้าซื้อ Buy 1-4, โซนขายทำกำไร TP 1-3 และ Action Signal</p>
         </div>
-        
       </div>
 
       <!-- Responsive Table Container (A-Z Sorted) -->
@@ -463,7 +462,6 @@
         needle.style.transform = `rotate(${data.needleAngle || 0}deg)`;
       }
 
-      // Render Dynamic Sorted Price Ladder for selected stock!
       renderPriceLadder(data);
     }
 
@@ -472,8 +470,8 @@
         const res = await fetch(GVIZ_URL);
         const text = await res.text();
         const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
-        if (match && match) {
-          const json = JSON.parse(match);
+        if (match && match[1]) {
+          const json = JSON.parse(match[1]);
           const rows = json.table.rows;
           if (rows && rows.length > 0) {
             const fetchedDb = {};
@@ -481,19 +479,19 @@
               const c = r.c;
               if (!c || !c[0] || !c[0].v) return;
               const ticker = String(c[0].v).trim().toUpperCase();
-              const company = c ? c.v : ticker;
-              const sector = c[2] ? c[2].v : 'Equities';
-              const price = c[3] ? parseFloat(c[3].v) : 0;
-              const fv = c[4] ? parseFloat(c[4].v) : price;
-              const b1 = c[5] ? parseFloat(c[5].v) : fv * 0.88;
-              const b4 = c[6] ? parseFloat(c[6].v) : fv * 0.76;
-              const tp1 = c[7] ? parseFloat(c[7].v) : fv * 1.18;
-              const tp2 = c[8] ? parseFloat(c[8].v) : fv * 1.25;
-              const tp3 = c[9] ? parseFloat(c[9].v) : fv * 1.32;
-              const action = c[10] ? String(c[10].v).trim() : 'HOLD';
-              const audit = c[11] ? String(c[11].v).trim() : 'Audited';
+              const company = c[1] && c[1].v ? c[1].v : ticker;
+              const sector = c[2] && c[2].v ? c[2].v : 'Equities';
+              const price = c[3] && c[3].v ? parseFloat(c[3].v) : 0;
+              const fv = c[4] && c[4].v ? parseFloat(c[4].v) : price;
+              const b1 = c[5] && c[5].v ? parseFloat(c[5].v) : fv * 0.88;
+              const b4 = c[6] && c[6].v ? parseFloat(c[6].v) : fv * 0.76;
+              const tp1 = c[7] && c[7].v ? parseFloat(c[7].v) : fv * 1.18;
+              const tp2 = c[8] && c[8].v ? parseFloat(c[8].v) : fv * 1.25;
+              const tp3 = c[9] && c[9].v ? parseFloat(c[9].v) : fv * 1.32;
+              const action = c[10] && c[10].v ? String(c[10].v).trim() : 'HOLD';
+              const audit = c[11] && c[11].v ? String(c[11].v).trim() : 'Audited';
 
-              const currency = ticker === 'AAPL' || ticker === 'MSFT' || ticker === 'NVDA' || ticker === 'GOOGL' ? '$' : '฿';
+              const currency = ['AAPL', 'MSFT', 'NVDA', 'GOOGL'].includes(ticker) ? '$' : '฿';
               const mosPct = fv > 0 ? (((fv - price) / fv) * 100) : 0;
               
               let angle = 0;
